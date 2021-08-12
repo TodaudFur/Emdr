@@ -837,49 +837,28 @@ class _EMDRState extends State<EMDR> with TickerProviderStateMixin {
     print("remove");
   }
 }
-
-class MyPainter extends CustomPainter {
-  final Animation<double> _offset;
-
-  MyPainter(Animation<double> animation)
-      : _offset = Tween<double>(begin: 40, end: xMax).animate(animation),
-        super(repaint: animation);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    var paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill
-      ..strokeCap = StrokeCap.round;
-
-    Offset xy = Offset(_offset.value, size.height / 2);
-
-    canvas.drawCircle(xy, size.width / 30, paint);
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    return false;
-  }
-}
-
-class MyImagePainter extends CustomPainter {
-  final Animation<double> _offset;
-  ui.Image image;
-
-  MyImagePainter(Animation<double> animation, this.image)
-      : _offset = Tween<double>(begin: 40, end: xMax).animate(animation),
-        super(repaint: animation);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    Offset xy = Offset(_offset.value, size.height / 2);
-
-    canvas.drawImage(image, Offset(0.0, 0.0), Paint());
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    return false;
-  }
-}
+//
+// class MyPainter extends CustomPainter {
+//   final Animation<double> _offset;
+//
+//   MyPainter(Animation<double> animation)
+//       : _offset = Tween<double>(begin: 40, end: xMax).animate(animation),
+//         super(repaint: animation);
+//
+//   @override
+//   void paint(Canvas canvas, Size size) {
+//     var paint = Paint()
+//       ..color = color
+//       ..style = PaintingStyle.fill
+//       ..strokeCap = StrokeCap.round;
+//
+//     Offset xy = Offset(_offset.value, size.height / 2);
+//
+//     canvas.drawCircle(xy, size.width / 30, paint);
+//   }
+//
+//   @override
+//   bool shouldRepaint(CustomPainter oldDelegate) {
+//     return false;
+//   }
+// }
