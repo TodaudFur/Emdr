@@ -791,16 +791,16 @@ class _EMDRState extends State<EMDR> with TickerProviderStateMixin {
     return completer.future;
   }
 
-  Widget _buildImage() {
-    if (this.isImageLoaded) {
-      return new CustomPaint(
-        painter: MyImagePainter(_animationController.view, image),
-      );
-    } else {
-      return CustomPaint(
-          painter: MyPainter(_animationController.view), child: Container());
-    }
-  }
+  // Widget _buildImage() {
+  //   if (this.isImageLoaded) {
+  //     return new CustomPaint(
+  //       painter: MyImagePainter(_animationController.view, image),
+  //     );
+  //   } else {
+  //     return CustomPaint(
+  //         painter: MyPainter(_animationController.view), child: Container());
+  //   }
+  // }
 
   Future getBall() async {
     Directory appDocDir = await getApplicationDocumentsDirectory();
