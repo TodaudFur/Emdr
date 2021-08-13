@@ -1,8 +1,15 @@
-import 'dart:async';
-
+import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
+import 'package:flutter_app/page_manager.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
+final PageManager _pageManager = PageManager();
+
+Icon volume = Icon(
+  FontAwesomeIcons.volumeUp,
+  color: Colors.white,
+);
 
 class Music extends StatefulWidget {
   const Music({Key? key}) : super(key: key);
@@ -12,24 +19,16 @@ class Music extends StatefulWidget {
 }
 
 class _MusicState extends State<Music> {
-  double _currentSliderValue = 0;
-  late Timer _timer;
-  bool _isPlaying = false;
-  var _icon = CupertinoIcons.play_arrow_solid;
-  late AudioPlayer player;
-
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    player = AudioPlayer();
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
-    _timer.cancel();
-    player.dispose();
+    //_pageManager.dispose();
     super.dispose();
   }
 
@@ -40,96 +39,96 @@ class _MusicState extends State<Music> {
         Row(
           children: [
             Text(
-              "Music",
+              "MUSIC",
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w900,
-                fontSize: 15,
               ),
             ),
             IconButton(
-              onPressed: () {},
+              onPressed: prev,
               icon: Icon(
-                CupertinoIcons.backward_fill,
+                FontAwesomeIcons.backward,
                 color: Colors.white,
+                size: 20,
+              ),
+            ),
+            ValueListenableBuilder<ButtonState>(
+              valueListenable: _pageManager.buttonNotifier,
+              builder: (_, value, __) {
+                switch (value) {
+                  case ButtonState.loading:
+                    return Container(
+                      margin: EdgeInsets.all(8.0),
+                      child: CircularProgressIndicator(),
+                      width: 20,
+                    );
+                  case ButtonState.paused:
+                    return IconButton(
+                      icon: Icon(
+                        FontAwesomeIcons.play,
+                        color: Colors.white,
+                      ),
+                      onPressed: _pageManager.play,
+                    );
+                  case ButtonState.playing:
+                    return IconButton(
+                      icon: Icon(
+                        FontAwesomeIcons.pause,
+                        color: Colors.white,
+                      ),
+                      onPressed: _pageManager.pause,
+                    );
+                }
+              },
+            ),
+            IconButton(
+              onPressed: next,
+              icon: Icon(
+                FontAwesomeIcons.forward,
+                color: Colors.white,
+                size: 20,
               ),
             ),
             IconButton(
               onPressed: () {
                 setState(() {
-                  _click();
+                  _pageManager.mute();
                 });
               },
-              icon: Icon(
-                _icon,
-                color: Colors.white,
-              ),
-            ),
-            IconButton(
-              onPressed: () {},
-              icon: Icon(
-                CupertinoIcons.forward_fill,
-                color: Colors.white,
-              ),
-            ),
-            IconButton(
-              onPressed: () {},
-              icon: Icon(
-                CupertinoIcons.speaker_slash,
-                color: Colors.white,
-              ),
+              icon: volume,
             ),
           ],
         ),
-        SliderTheme(
-          data: SliderThemeData(
-            trackHeight: 1,
-          ),
-          child: Slider(
-            value: _currentSliderValue,
-            min: 0,
-            max: 100,
-            divisions: 100,
-            activeColor: Colors.white,
-            inactiveColor: Colors.white,
-            label: _currentSliderValue.round().toString(),
-            onChanged: (double value) {
-              setState(() {
-                _currentSliderValue = value;
-              });
-            },
-          ),
+        ValueListenableBuilder<ProgressBarState>(
+          valueListenable: _pageManager.progressNotifier,
+          builder: (_, value, __) {
+            return ProgressBar(
+              timeLabelTextStyle: TextStyle(color: Colors.white),
+              barHeight: 2,
+              baseBarColor: Colors.grey,
+              progressBarColor: Colors.white,
+              thumbColor: Colors.white,
+              thumbGlowColor: Colors.white12,
+              bufferedBarColor: Colors.grey[400],
+              thumbRadius: 8,
+              thumbGlowRadius: 20,
+              progress: value.current,
+              buffered: value.buffered,
+              total: value.total,
+              onSeek: _pageManager.seek,
+            );
+          },
         ),
       ],
     );
   }
 
-  void _click() {
-    setState(() {
-      _isPlaying = !_isPlaying;
-      if (_isPlaying) {
-        _icon = CupertinoIcons.pause_solid;
-        _start();
-      } else {
-        _icon = CupertinoIcons.play_arrow_solid;
-        _pause();
-      }
-    });
+  next() {
+    _pageManager.next();
   }
 
-  void _start() async {
-    await player.setAsset('assets/music/test.mp3');
-    player.play();
-    print(player.currentIndex);
-    /*_timer = Timer.periodic(Duration(seconds: 1), (timer) {
-      setState(() {
-        //TODO:value++
-      });
-    });*/
-  }
-
-  void _pause() {
-    player.pause();
-    //_timer.cancel();
+  prev() {
+    _pageManager.prev();
   }
 }

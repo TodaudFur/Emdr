@@ -30,6 +30,9 @@ dependencies:
   path_provider: ^2.0.2
   shared_preferences: ^2.0.6
   just_audio: ^0.9.5
+  font_awesome_flutter: ^9.1.0
+  audio_video_progress_bar: ^0.9.0
+  rxdart: ^0.27.1
 
 dev_dependencies:
   flutter_test:
@@ -50,6 +53,9 @@ flutter:
   assets:
     - assets/background.jpg
     - assets/music/test.mp3
+    - assets/music/test2.mp3
+    - assets/music/test3.mp3
+    - assets/music/test4.mp3
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

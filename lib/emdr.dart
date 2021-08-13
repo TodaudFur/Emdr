@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/cupertino.dart';
@@ -10,6 +9,7 @@ import 'package:flutter_app/emdrbottom.dart';
 import 'package:flutter_app/infinity.dart';
 import 'package:flutter_app/music.dart';
 import 'package:flutter_app/path.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -42,6 +42,7 @@ class _EMDRState extends State<EMDR> with TickerProviderStateMixin {
   bool fullScreen = false;
   int topSize = 5;
   int bottomSize = 5;
+  bool _start = false;
 
   List<Color> boxColor = [
     Color(0xFF9ea1b4),
@@ -66,13 +67,13 @@ class _EMDRState extends State<EMDR> with TickerProviderStateMixin {
     Color(0XFF8c6ba1),
   ];
 
-  late Widget paint;
+  IconData screen = FontAwesomeIcons.expand;
   bool speedCheck = false;
   bool zeroCheck = false;
+  late Widget paint;
 
   int mode = 0;
   double circleRadius = 20;
-
   @override
   void initState() {
     setImage();
@@ -83,13 +84,14 @@ class _EMDRState extends State<EMDR> with TickerProviderStateMixin {
   @override
   void dispose() {
     _animationController.dispose();
+
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     if (fullScreen) {
-      top = MediaQuery.of(context).size.height / 2 - 40;
+      top = MediaQuery.of(context).size.height / 3 - 40;
     } else {
       top = MediaQuery.of(context).size.height / 4 - 40;
     }
@@ -120,54 +122,13 @@ class _EMDRState extends State<EMDR> with TickerProviderStateMixin {
     colorBorder[colorAct] = Colors.white;
     modeBoxColor[mode] = Color(0xFF26283a);
     boxColor[active] = Color(0xFF26283a);
-    circleRadius = MediaQuery.of(context).size.width / 15;
+    circleRadius = MediaQuery.of(context).size.width / 17;
 
     _animationController = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: time),
     );
-    if (mode == 0) {
-      //paint = _buildImage();
-      if (speedCheck) {
-        Future.delayed(const Duration(milliseconds: 1), () {
-          setState(() {
-            mode++;
-            speedCheck = false;
-          });
-        });
-      }
-      paint = Line();
-    } else if (mode == 1) {
-      if (zeroCheck) {
-        Future.delayed(const Duration(milliseconds: 10), () {
-          setState(() {
-            mode--;
-            zeroCheck = false;
-          });
-        });
-      }
-      if (speedCheck) {
-        Future.delayed(const Duration(milliseconds: 10), () {
-          setState(() {
-            mode++;
-            speedCheck = false;
-          });
-        });
-      }
-      paint = SampleAnimation();
-    } else if (mode == 2) {
-      if (speedCheck) {
-        Future.delayed(const Duration(milliseconds: 10), () {
-          setState(() {
-            mode++;
-            speedCheck = false;
-          });
-        });
-      }
-      paint = CircleAnimation();
-    } else if (mode == 3) {
-      paint = Infinity();
-    }
+    modeCheck();
     _animationController.forward();
     _animationController.repeat(reverse: true);
 
@@ -188,10 +149,11 @@ class _EMDRState extends State<EMDR> with TickerProviderStateMixin {
                 Expanded(
                   flex: topSize,
                   child: Padding(
-                    padding: const EdgeInsets.only(left: 12.0, right: 12.0),
+                    padding: const EdgeInsets.only(left: 15.0, right: 15.0),
                     child: Container(
                       decoration: BoxDecoration(
                         color: Color(0x66999999),
+                        borderRadius: BorderRadius.circular(10),
                         border: Border.all(color: Colors.white),
                       ),
                       child: Stack(
@@ -202,22 +164,25 @@ class _EMDRState extends State<EMDR> with TickerProviderStateMixin {
                               right: 0,
                               child: IconButton(
                                 onPressed: () {
+                                  modeChange();
                                   setState(() {
                                     if (fullScreen) {
                                       fullScreen = false;
                                       print(fullScreen);
                                       topSize = 5;
                                       bottomSize = 5;
+                                      screen = FontAwesomeIcons.expand;
                                     } else {
                                       fullScreen = true;
                                       print(fullScreen);
                                       topSize = 10;
                                       bottomSize = 0;
+                                      screen = FontAwesomeIcons.compress;
                                     }
                                   });
                                 },
                                 icon: Icon(
-                                  CupertinoIcons.viewfinder,
+                                  screen,
                                   color: Colors.white,
                                 ),
                               )),
@@ -242,492 +207,540 @@ class _EMDRState extends State<EMDR> with TickerProviderStateMixin {
     );
   }
 
+  void modeCheck() {
+    if (_start) {
+      if (mode == 0) {
+        //paint = _buildImage();
+        if (speedCheck) {
+          Future.delayed(const Duration(milliseconds: 1), () {
+            setState(() {
+              mode++;
+              speedCheck = false;
+            });
+          });
+        }
+        paint = Line();
+      } else if (mode == 1) {
+        if (zeroCheck) {
+          Future.delayed(const Duration(milliseconds: 10), () {
+            setState(() {
+              mode--;
+              zeroCheck = false;
+            });
+          });
+        }
+        if (speedCheck) {
+          Future.delayed(const Duration(milliseconds: 10), () {
+            setState(() {
+              mode++;
+              speedCheck = false;
+            });
+          });
+        }
+        paint = SampleAnimation();
+      } else if (mode == 2) {
+        if (speedCheck) {
+          Future.delayed(const Duration(milliseconds: 10), () {
+            setState(() {
+              mode++;
+              speedCheck = false;
+            });
+          });
+        }
+        paint = CircleAnimation();
+      } else if (mode == 3) {
+        paint = Infinity();
+      }
+    } else {
+      paint = Container(
+        child: Stack(
+          children: <Widget>[
+            Positioned(
+              top: top,
+              left: MediaQuery.of(context).size.width / 2 - 20,
+              child: Container(
+                decoration: BoxDecoration(
+                    color: color, borderRadius: BorderRadius.circular(30)),
+                width: 30,
+                height: 30,
+                child: FittedBox(
+                  fit: BoxFit.fill,
+                  child: ballWidget,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  void _update(bool ch) {
+    setState(() => _start = !_start);
+  }
+
   // ignore: non_constant_identifier_names
   Container EMDRControl() {
-    if (fullScreen) {
-      return Container();
-    } else {
-      return Container(
-        decoration: BoxDecoration(
-            border: Border.all(color: Colors.white),
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(20), topRight: Radius.circular(20)),
-            color: Color(0x88999999)),
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            children: [
-              EMDRBottom(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      GestureDetector(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: boxColor[0],
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          height: 30,
-                          width: 30,
-                          alignment: Alignment.center,
-                          child: Text(
-                            "S1",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
+    // if (fullScreen) {
+    //   return Container();
+    // } else {
+    bool vi = true;
+    if (fullScreen) vi = false;
+    return Container(
+      decoration: BoxDecoration(
+          border: Border.all(color: Colors.white),
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+          color: Color(0x88999999)),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          children: [
+            EMDRBottom(
+              update: _update,
+            ),
+            Container(
+              child: Visibility(
+                visible: vi,
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            GestureDetector(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: boxColor[0],
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                height: 30,
+                                width: 30,
+                                alignment: Alignment.center,
+                                child: Text(
+                                  "S1",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              onTap: () {
+                                speedChange(2000, 0);
+                              },
                             ),
-                          ),
-                        ),
-                        onTap: () {
-                          if (mode > 0) {
-                            mode--;
-                            speedCheck = true;
-                          } else {
-                            mode++;
-                            zeroCheck = true;
-                          }
-                          setState(() {
-                            time = 2000;
-                            active = 0;
-                          });
-                        },
-                      ),
-                      GestureDetector(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: boxColor[1],
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          height: 30,
-                          width: 30,
-                          alignment: Alignment.center,
-                          child: Text(
-                            "S2",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
+                            GestureDetector(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: boxColor[1],
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                height: 30,
+                                width: 30,
+                                alignment: Alignment.center,
+                                child: Text(
+                                  "S2",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              onTap: () {
+                                speedChange(1400, 1);
+                              },
                             ),
-                          ),
-                        ),
-                        onTap: () {
-                          if (mode > 0) {
-                            mode--;
-                            speedCheck = true;
-                          } else {
-                            mode++;
-                            zeroCheck = true;
-                          }
-                          setState(() {
-                            time = 1400;
-                            active = 1;
-                          });
-                        },
-                      ),
-                      GestureDetector(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: boxColor[2],
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          height: 30,
-                          width: 30,
-                          alignment: Alignment.center,
-                          child: Text(
-                            "S3",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
+                            GestureDetector(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: boxColor[2],
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                height: 30,
+                                width: 30,
+                                alignment: Alignment.center,
+                                child: Text(
+                                  "S3",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              onTap: () {
+                                speedChange(700, 2);
+                              },
                             ),
-                          ),
-                        ),
-                        onTap: () {
-                          if (mode > 0) {
-                            mode--;
-                            speedCheck = true;
-                          } else {
-                            mode++;
-                            zeroCheck = true;
-                          }
-                          setState(() {
-                            time = 700;
-                            active = 2;
-                          });
-                        },
-                      ),
-                      GestureDetector(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: boxColor[3],
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          height: 30,
-                          width: 30,
-                          alignment: Alignment.center,
-                          child: Text(
-                            "S4",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
+                            GestureDetector(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: boxColor[3],
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                height: 30,
+                                width: 30,
+                                alignment: Alignment.center,
+                                child: Text(
+                                  "S4",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              onTap: () {
+                                speedChange(500, 3);
+                              },
                             ),
-                          ),
-                        ),
-                        onTap: () {
-                          if (mode > 0) {
-                            mode--;
-                            speedCheck = true;
-                          } else {
-                            mode++;
-                            zeroCheck = true;
-                          }
-                          setState(() {
-                            time = 500;
-                            active = 3;
-                          });
-                        },
-                      ),
-                      GestureDetector(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: boxColor[4],
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          height: 30,
-                          width: 30,
-                          alignment: Alignment.center,
-                          child: Text(
-                            "S5",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
+                            GestureDetector(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: boxColor[4],
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                height: 30,
+                                width: 30,
+                                alignment: Alignment.center,
+                                child: Text(
+                                  "S5",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              onTap: () {
+                                speedChange(300, 4);
+                              },
                             ),
-                          ),
+                          ],
                         ),
-                        onTap: () {
-                          if (mode > 0) {
-                            mode--;
-                            speedCheck = true;
-                          } else {
-                            mode++;
-                            zeroCheck = true;
-                          }
-                          setState(() {
-                            time = 300;
-                            active = 4;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      GestureDetector(
-                        child: Container(
+                        Row(
+                          children: [
+                            GestureDetector(
+                              child: Container(
+                                  decoration: BoxDecoration(
+                                    color: modeBoxColor[0],
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  height: 30,
+                                  width: 35,
+                                  alignment: Alignment.center,
+                                  child: Icon(
+                                    CupertinoIcons.resize_h,
+                                    color: Colors.white,
+                                  )),
+                              onTap: () {
+                                if (_start) {
+                                  setState(() {
+                                    mode = 0;
+                                  });
+                                }
+                              },
+                            ),
+                            VerticalDivider(
+                              color: Colors.white12,
+                              width: 5,
+                            ),
+                            GestureDetector(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: modeBoxColor[1],
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                height: 30,
+                                width: 35,
+                                alignment: Alignment.center,
+                                child: Icon(
+                                  CupertinoIcons.chevron_compact_down,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              onTap: () {
+                                if (_start) {
+                                  setState(() {
+                                    mode = 1;
+                                  });
+                                }
+                              },
+                            ),
+                            VerticalDivider(
+                              color: Colors.white12,
+                              width: 5,
+                            ),
+                            GestureDetector(
+                              child: Container(
+                                  decoration: BoxDecoration(
+                                    color: modeBoxColor[2],
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  height: 30,
+                                  width: 35,
+                                  alignment: Alignment.center,
+                                  child: Icon(
+                                    CupertinoIcons.circle,
+                                    color: Colors.white,
+                                  )),
+                              onTap: () {
+                                if (_start) {
+                                  setState(() {
+                                    mode = 2;
+                                  });
+                                }
+                              },
+                            ),
+                            VerticalDivider(
+                              color: Colors.white10,
+                              width: 5,
+                            ),
+                            GestureDetector(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: modeBoxColor[3],
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                height: 30,
+                                width: 35,
+                                alignment: Alignment.center,
+                                child: Icon(
+                                  CupertinoIcons.infinite,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              onTap: () {
+                                if (_start) {
+                                  setState(() {
+                                    mode = 3;
+                                  });
+                                }
+                              },
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+                    Divider(
+                      color: Colors.white10,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            colorChange(Color(0xFFba343c), 0);
+                          },
+                          child: Container(
                             decoration: BoxDecoration(
-                              color: modeBoxColor[0],
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            height: 30,
-                            width: 35,
-                            alignment: Alignment.center,
-                            child: Icon(
-                              CupertinoIcons.resize_h,
-                              color: Colors.white,
-                            )),
-                        onTap: () {
-                          setState(() {
-                            mode = 0;
-                          });
-                        },
-                      ),
-                      VerticalDivider(
-                        color: Colors.white12,
-                        width: 5,
-                      ),
-                      GestureDetector(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: modeBoxColor[1],
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          height: 30,
-                          width: 35,
-                          alignment: Alignment.center,
-                          child: Icon(
-                            CupertinoIcons.chevron_compact_down,
-                            color: Colors.white,
+                                color: Color(0xFFba343c),
+                                borderRadius:
+                                    BorderRadius.circular(circleRadius),
+                                border: Border.all(
+                                  color: colorBorder[0],
+                                )),
+                            height: circleRadius,
+                            width: circleRadius,
                           ),
                         ),
-                        onTap: () {
-                          setState(() {
-                            mode = 1;
-                          });
-                        },
-                      ),
-                      VerticalDivider(
-                        color: Colors.white12,
-                        width: 5,
-                      ),
-                      GestureDetector(
-                        child: Container(
+                        VerticalDivider(),
+                        GestureDetector(
+                          onTap: () {
+                            colorChange(Color(0XFFba853c), 1);
+                          },
+                          child: Container(
                             decoration: BoxDecoration(
-                              color: modeBoxColor[2],
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            height: 30,
-                            width: 35,
-                            alignment: Alignment.center,
-                            child: Icon(
-                              CupertinoIcons.circle,
-                              color: Colors.white,
-                            )),
-                        onTap: () {
-                          setState(() {
-                            mode = 2;
-                          });
-                        },
-                      ),
-                      VerticalDivider(
-                        color: Colors.white10,
-                        width: 5,
-                      ),
-                      GestureDetector(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: modeBoxColor[3],
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          height: 30,
-                          width: 35,
-                          alignment: Alignment.center,
-                          child: Icon(
-                            CupertinoIcons.infinite,
-                            color: Colors.white,
+                                color: Color(0XFFba853c),
+                                borderRadius:
+                                    BorderRadius.circular(circleRadius),
+                                border: Border.all(
+                                  color: colorBorder[1],
+                                )),
+                            height: circleRadius,
+                            width: circleRadius,
                           ),
                         ),
-                        onTap: () {
-                          setState(() {
-                            mode = 3;
-                          });
-                        },
-                      ),
-                    ],
-                  )
-                ],
-              ),
-              Divider(
-                color: Colors.white10,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        color = Color(0xFFba343c);
-                        colorAct = 0;
-                        ballWidget = Container();
-                        removeBall();
-                      });
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                          color: Color(0xFFba343c),
-                          borderRadius: BorderRadius.circular(circleRadius),
-                          border: Border.all(
-                            color: colorBorder[0],
-                          )),
-                      height: circleRadius,
-                      width: circleRadius,
+                        VerticalDivider(),
+                        GestureDetector(
+                          onTap: () {
+                            colorChange(Color(0XFFb8b23b), 2);
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                                color: Color(0XFFb8b23b),
+                                borderRadius:
+                                    BorderRadius.circular(circleRadius),
+                                border: Border.all(
+                                  color: colorBorder[2],
+                                )),
+                            height: circleRadius,
+                            width: circleRadius,
+                          ),
+                        ),
+                        VerticalDivider(),
+                        GestureDetector(
+                          onTap: () {
+                            colorChange(Color(0XFF54b23b), 3);
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                                color: Color(0XFF54b23b),
+                                borderRadius:
+                                    BorderRadius.circular(circleRadius),
+                                border: Border.all(
+                                  color: colorBorder[3],
+                                )),
+                            height: circleRadius,
+                            width: circleRadius,
+                          ),
+                        ),
+                        VerticalDivider(),
+                        GestureDetector(
+                          onTap: () {
+                            colorChange(Color(0XFF5886ba), 4);
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                                color: Color(0XFF5886ba),
+                                borderRadius:
+                                    BorderRadius.circular(circleRadius),
+                                border: Border.all(
+                                  color: colorBorder[4],
+                                )),
+                            height: circleRadius,
+                            width: circleRadius,
+                          ),
+                        ),
+                        VerticalDivider(),
+                        GestureDetector(
+                          onTap: () {
+                            colorChange(Color(0XFF4d4863), 5);
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                                color: Color(0XFF4d4863),
+                                borderRadius:
+                                    BorderRadius.circular(circleRadius),
+                                border: Border.all(
+                                  color: colorBorder[5],
+                                )),
+                            height: circleRadius,
+                            width: circleRadius,
+                          ),
+                        ),
+                        VerticalDivider(),
+                        GestureDetector(
+                          onTap: () {
+                            colorChange(Color(0XFF8c6ba1), 6);
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                                color: Color(0XFF8c6ba1),
+                                borderRadius:
+                                    BorderRadius.circular(circleRadius),
+                                border: Border.all(
+                                  color: colorBorder[6],
+                                )),
+                            height: circleRadius,
+                            width: circleRadius,
+                          ),
+                        ),
+                        VerticalDivider(),
+                      ],
                     ),
-                  ),
-                  VerticalDivider(),
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        color = Color(0XFFba853c);
-                        colorAct = 1;
-                        ballWidget = Container();
-                        removeBall();
-                      });
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                          color: Color(0XFFba853c),
-                          borderRadius: BorderRadius.circular(circleRadius),
-                          border: Border.all(
-                            color: colorBorder[1],
-                          )),
-                      height: circleRadius,
-                      width: circleRadius,
+                    Divider(
+                      color: Colors.white12,
                     ),
-                  ),
-                  VerticalDivider(),
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        color = Color(0XFFb8b23b);
-                        colorAct = 2;
-                        ballWidget = Container();
-                        removeBall();
-                      });
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                          color: Color(0XFFb8b23b),
-                          borderRadius: BorderRadius.circular(circleRadius),
-                          border: Border.all(
-                            color: colorBorder[2],
-                          )),
-                      height: circleRadius,
-                      width: circleRadius,
-                    ),
-                  ),
-                  VerticalDivider(),
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        color = Color(0XFF54b23b);
-                        colorAct = 3;
-                        ballWidget = Container();
-                        removeBall();
-                      });
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                          color: Color(0XFF54b23b),
-                          borderRadius: BorderRadius.circular(circleRadius),
-                          border: Border.all(
-                            color: colorBorder[3],
-                          )),
-                      height: circleRadius,
-                      width: circleRadius,
-                    ),
-                  ),
-                  VerticalDivider(),
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        color = Color(0XFF5886ba);
-                        colorAct = 4;
-                        ballWidget = Container();
-                        removeBall();
-                      });
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                          color: Color(0XFF5886ba),
-                          borderRadius: BorderRadius.circular(circleRadius),
-                          border: Border.all(
-                            color: colorBorder[4],
-                          )),
-                      height: circleRadius,
-                      width: circleRadius,
-                    ),
-                  ),
-                  VerticalDivider(),
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        color = Color(0XFF4d4863);
-                        colorAct = 5;
-                        ballWidget = Container();
-                        removeBall();
-                      });
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                          color: Color(0XFF4d4863),
-                          borderRadius: BorderRadius.circular(circleRadius),
-                          border: Border.all(
-                            color: colorBorder[5],
-                          )),
-                      height: circleRadius,
-                      width: circleRadius,
-                    ),
-                  ),
-                  VerticalDivider(),
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        color = Color(0XFF8c6ba1);
-                        colorAct = 6;
-                        ballWidget = Container();
-                        removeBall();
-                      });
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                          color: Color(0XFF8c6ba1),
-                          borderRadius: BorderRadius.circular(circleRadius),
-                          border: Border.all(
-                            color: colorBorder[6],
-                          )),
-                      height: circleRadius,
-                      width: circleRadius,
-                    ),
-                  ),
-                  VerticalDivider(),
-                ],
-              ),
-              Divider(
-                color: Colors.white12,
-              ),
-              GestureDetector(
-                onTap: () {
-                  Get.defaultDialog(
-                      title: "이미지 선택",
-                      content: Column(
+                    GestureDetector(
+                      onTap: () {
+                        Get.defaultDialog(
+                            title: "이미지 선택",
+                            content: Column(
+                              children: [
+                                RaisedButton(
+                                  onPressed: getImage,
+                                  child: Text("배경 이미지"),
+                                ),
+                                RaisedButton(
+                                  onPressed: getBall,
+                                  child: Text("볼 이미지"),
+                                )
+                              ],
+                            ),
+                            textCancel: "닫기",
+                            buttonColor: Colors.white,
+                            cancelTextColor: Colors.black);
+                      },
+                      child: Row(
                         children: [
-                          RaisedButton(
-                            onPressed: getImage,
-                            child: Text("배경 이미지"),
+                          Icon(
+                            CupertinoIcons.camera_fill,
+                            color: Colors.white54,
+                            size: 25,
                           ),
-                          RaisedButton(
-                            onPressed: getBall,
-                            child: Text("볼 이미지"),
+                          VerticalDivider(
+                            color: Colors.white12,
+                            width: 10,
+                          ),
+                          Text(
+                            "배경과 볼을 원하는 이미지로 업로드 할 수 있습니다.",
+                            style: TextStyle(
+                              color: Colors.white54,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 13,
+                            ),
                           )
                         ],
                       ),
-                      textCancel: "닫기",
-                      buttonColor: Colors.white,
-                      cancelTextColor: Colors.black);
-                },
-                child: Row(
-                  children: [
-                    Icon(
-                      CupertinoIcons.camera_fill,
-                      color: Colors.white,
-                      size: 30,
                     ),
-                    VerticalDivider(
-                      color: Colors.white12,
+                    Divider(
+                      color: Colors.white70,
+                      height: 5,
                     ),
-                    Text(
-                      "배경과 볼을 원하는 이미지로 업로드 할 수 있습니다.",
-                      style: TextStyle(
-                        color: Colors.white54,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    )
+                    Music(),
                   ],
                 ),
               ),
-              Divider(
-                color: Colors.white12,
-                height: 5,
-              ),
-              Music(),
-            ],
-          ),
+            ),
+          ],
         ),
-      );
+      ),
+    );
+    //}
+  }
+
+  void colorChange(Color _color, int act) {
+    if (_start) {
+      setState(() {
+        color = _color;
+        colorAct = act;
+        ballWidget = Container();
+        removeBall();
+      });
+    }
+  }
+
+  void speedChange(int _time, int _active) {
+    if (_start) {
+      modeChange();
+      setState(() {
+        time = _time;
+        active = _active;
+      });
+    }
+  }
+
+  void modeChange() {
+    if (mode > 0) {
+      mode--;
+      speedCheck = true;
+    } else {
+      mode++;
+      zeroCheck = true;
     }
   }
 
@@ -780,28 +793,6 @@ class _EMDRState extends State<EMDR> with TickerProviderStateMixin {
     });
   }
 
-  Future<ui.Image> loadImage(Uint8List img) async {
-    final Completer<ui.Image> completer = new Completer();
-    ui.decodeImageFromList(img, (ui.Image img) {
-      setState(() {
-        isImageLoaded = true;
-      });
-      return completer.complete(img);
-    });
-    return completer.future;
-  }
-
-  // Widget _buildImage() {
-  //   if (this.isImageLoaded) {
-  //     return new CustomPaint(
-  //       painter: MyImagePainter(_animationController.view, image),
-  //     );
-  //   } else {
-  //     return CustomPaint(
-  //         painter: MyPainter(_animationController.view), child: Container());
-  //   }
-  // }
-
   Future getBall() async {
     Directory appDocDir = await getApplicationDocumentsDirectory();
     String path = appDocDir.path;
@@ -837,28 +828,3 @@ class _EMDRState extends State<EMDR> with TickerProviderStateMixin {
     print("remove");
   }
 }
-//
-// class MyPainter extends CustomPainter {
-//   final Animation<double> _offset;
-//
-//   MyPainter(Animation<double> animation)
-//       : _offset = Tween<double>(begin: 40, end: xMax).animate(animation),
-//         super(repaint: animation);
-//
-//   @override
-//   void paint(Canvas canvas, Size size) {
-//     var paint = Paint()
-//       ..color = color
-//       ..style = PaintingStyle.fill
-//       ..strokeCap = StrokeCap.round;
-//
-//     Offset xy = Offset(_offset.value, size.height / 2);
-//
-//     canvas.drawCircle(xy, size.width / 30, paint);
-//   }
-//
-//   @override
-//   bool shouldRepaint(CustomPainter oldDelegate) {
-//     return false;
-//   }
-// }

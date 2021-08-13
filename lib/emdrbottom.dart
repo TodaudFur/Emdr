@@ -3,15 +3,29 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 class EMDRBottom extends StatefulWidget {
+  final ValueChanged<bool> update;
+  EMDRBottom({required this.update});
   @override
-  _EMDRBottomState createState() => _EMDRBottomState();
+  _EMDRBottomState createState() => _EMDRBottomState(update: update);
 }
 
 class _EMDRBottomState extends State<EMDRBottom> {
+  final ValueChanged<bool> update;
+  _EMDRBottomState({required this.update});
+
   int min = 30;
   late Timer _timer;
   bool _isPlaying = false;
   var _icon = Icons.play_arrow;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    if (_isPlaying) {
+      _start();
+    }
+  }
 
   @override
   void dispose() {
@@ -38,7 +52,7 @@ class _EMDRBottomState extends State<EMDRBottom> {
           ],
         ),
         Divider(
-          color: Colors.white38,
+          color: Colors.white70,
           height: 10,
         ),
         Row(
@@ -65,22 +79,33 @@ class _EMDRBottomState extends State<EMDRBottom> {
   }
 
   void _click() {
-    setState(() {
-      _isPlaying = !_isPlaying;
-      if (_isPlaying) {
-        _icon = Icons.pause;
-        _start();
-      } else {
-        _icon = Icons.play_arrow;
-        _pause();
-      }
-    });
+    if (min > 0) {
+      setState(() {
+        update(true);
+        _isPlaying = !_isPlaying;
+        if (_isPlaying) {
+          _icon = Icons.pause;
+          _start();
+        } else {
+          _icon = Icons.play_arrow;
+          _pause();
+        }
+      });
+    }
   }
 
   void _start() {
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(Duration(minutes: 1), (timer) {
       setState(() {
-        min--;
+        if (min > 0) {
+          min--;
+        } else {
+          setState(() {
+            update(false);
+            _icon = Icons.play_arrow;
+            _pause();
+          });
+        }
       });
     });
   }
