@@ -91,9 +91,9 @@ class _EMDRState extends State<EMDR> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     if (fullScreen) {
-      top = MediaQuery.of(context).size.height / 3 - 40;
+      top = MediaQuery.of(context).size.height / 2 - 80;
     } else {
-      top = MediaQuery.of(context).size.height / 4 - 40;
+      top = MediaQuery.of(context).size.height / 4 - 20;
     }
 
     xMax = MediaQuery.of(context).size.width - 60;
@@ -168,13 +168,11 @@ class _EMDRState extends State<EMDR> with TickerProviderStateMixin {
                                   setState(() {
                                     if (fullScreen) {
                                       fullScreen = false;
-                                      print(fullScreen);
                                       topSize = 5;
                                       bottomSize = 5;
                                       screen = FontAwesomeIcons.expand;
                                     } else {
                                       fullScreen = true;
-                                      print(fullScreen);
                                       topSize = 10;
                                       bottomSize = 0;
                                       screen = FontAwesomeIcons.compress;
