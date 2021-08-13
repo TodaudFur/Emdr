@@ -23,7 +23,7 @@ class _LineState extends State<Line> with TickerProviderStateMixin {
         vsync: this, duration: Duration(milliseconds: cTime));
 
     super.initState();
-    _animation = Tween(begin: 40.0, end: 330.0).animate(_controller)
+    _animation = Tween(begin: 20.0, end: 330.0).animate(_controller)
       ..addListener(() {
         setState(() {});
       });

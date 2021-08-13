@@ -760,11 +760,11 @@ class _EMDRState extends State<EMDR> with TickerProviderStateMixin {
     setState(() {
       if (pickedFile != null) {
         _image = File(pickedFile.path);
-        Get.snackbar(
-          "배경 이미지",
-          "저장되었습니다.",
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        // Get.snackbar(
+        //   "배경 이미지",
+        //   "저장되었습니다.",
+        //   snackPosition: SnackPosition.BOTTOM,
+        // );
       } else {
         print('No image selected.');
       }
@@ -804,11 +804,11 @@ class _EMDRState extends State<EMDR> with TickerProviderStateMixin {
           backgroundColor: color,
           backgroundImage: FileImage(_ball),
         );
-        Get.snackbar(
-          "공 이미지",
-          "저장되었습니다.",
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        // Get.snackbar(
+        //   "공 이미지",
+        //   "저장되었습니다.",
+        //   snackPosition: SnackPosition.BOTTOM,
+        // );
       } else {
         print('No image selected.');
       }

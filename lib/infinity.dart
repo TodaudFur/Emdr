@@ -72,14 +72,14 @@ class _InfinityState extends State<Infinity>
   Path drawPath() {
     Size size = Size(330, top * 2);
     Path path = Path();
-    path.moveTo(40, size.height / 2);
+    path.moveTo(20, size.height / 2);
     path.quadraticBezierTo(
         size.width / 4, size.height, size.width / 2, size.height / 2);
     path.quadraticBezierTo(
         (size.width / 4) * 3, 0, size.width, size.height / 2);
     path.quadraticBezierTo(
         (size.width / 4) * 3, size.height, size.width / 2, size.height / 2);
-    path.quadraticBezierTo(size.width / 4, 0, 40, size.height / 2);
+    path.quadraticBezierTo(size.width / 4, 0, 20, size.height / 2);
     return path;
   }
 
